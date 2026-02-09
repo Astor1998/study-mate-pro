@@ -1739,7 +1739,7 @@
                         Download a complete backup file containing all your study data: timers, reminders, timetable, test records, and analytics.
                     </p>
                     <p style="color: var(--primary); margin-bottom: 15px; font-size: 0.9rem; line-height: 1.5;">
-                        <i class="fas fa-code-branch"></i> Current Version: ${CURRENT_VERSION}
+                        <i class="fas fa-code-branch"></i> Current Version: <span id="backupVersion"></span>
                     </p>
                     <button class="btn btn-primary" onclick="exportAllData()" style="width: 100%; padding: 14px;">
                         <i class="fas fa-download"></i> Export Complete Backup
@@ -1930,49 +1930,6 @@
         const DateTime = luxon.DateTime;
         const CURRENT_VERSION = "3.0.3"; // UPDATE THIS WHEN YOU MAKE CHANGES
         
-        // ==================== AUTO-UPDATE SYSTEM ====================
-        const GITHUB_VERSION_URL = "https://raw.githubusercontent.com/astor1998/study-mate-pro/main/version.json";
-        let updateCheckInterval;
-
-        async function checkForUpdates() {
-            try {
-                const response = await fetch(`${GITHUB_VERSION_URL}?t=${Date.now()}`);
-                const data = await response.json();
-                
-                if (data.version !== CURRENT_VERSION) {
-                    showUpdateNotification(data.version, data.changelog || "New features and improvements");
-                }
-            } catch (error) {
-                console.log("Update check failed");
-            }
-        }
-
-        function showUpdateNotification(newVersion, changelog) {
-            const notification = `
-                <div id="updateNotify" style="position:fixed;bottom:20px;right:20px;background:#f59e0b;color:white;padding:15px;border-radius:10px;z-index:9999;max-width:300px;box-shadow:0 5px 20px rgba(0,0,0,0.3)">
-                    <strong>🔄 Update Available!</strong><br>
-                    v${newVersion} is ready<br>
-                    <button onclick="updateApp()" style="background:white;color:#f59e0b;border:none;padding:8px 15px;border-radius:5px;margin-top:10px;width:100%;cursor:pointer">
-                        Click to Update
-                    </button>
-                </div>
-            `;
-            
-            if (!document.getElementById('updateNotify')) {
-                document.body.insertAdjacentHTML('beforeend', notification);
-            }
-        }
-
-        function updateApp() {
-            // Clear cache and reload
-            localStorage.removeItem('studyMateVersion');
-            location.reload(true);
-        }
-
-        // Start checking for updates
-        setTimeout(checkForUpdates, 5000); // Check 5 seconds after load
-        setInterval(checkForUpdates, 1800000); // Check every 30 minutes
-        
         let appData = {
             sessions: [],
             reminders: [],
@@ -2043,58 +2000,7 @@
             dataSync: null,
             weeklyReset: null
         };
-
-        // ==================== AUTO-UPDATE CHECKER ====================
-        function checkForUpdates() {
-            const lastVersion = localStorage.getItem('studyMateVersion');
-            
-            if (!lastVersion || lastVersion !== CURRENT_VERSION) {
-                // Show update notification
-                const updateMessage = `
-                    <div id="updateNotification" style="position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, var(--warning), #d97706); 
-                                color: white; padding: 15px 20px; border-radius: 10px; z-index: 9999; 
-                                box-shadow: 0 5px 20px rgba(0,0,0,0.3); max-width: 400px;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                            <i class="fas fa-sync-alt" style="font-size: 1.2rem;"></i>
-                            <strong>New Update Available!</strong>
-                        </div>
-                        <div style="font-size: 0.9rem; margin-bottom: 12px; opacity: 0.9;">
-                            Version ${CURRENT_VERSION} is available. Please refresh to get latest features.
-                        </div>
-                        <button onclick="forceUpdate()" 
-                                style="background: white; color: var(--warning); border: none; padding: 8px 16px; 
-                                       border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">
-                            <i class="fas fa-redo"></i> Refresh Now
-                        </button>
-                    </div>
-                `;
-                
-                // Show update notification
-                const updateDiv = document.createElement('div');
-                updateDiv.innerHTML = updateMessage;
-                document.body.appendChild(updateDiv);
-                
-                // Remove after 30 seconds
-                setTimeout(() => {
-                    if (updateDiv.parentNode) {
-                        updateDiv.remove();
-                    }
-                }, 30000);
-                
-                // Log update available
-                console.log(`Update available: ${lastVersion || 'none'} → ${CURRENT_VERSION}`);
-            }
-            
-            // Store current version
-            localStorage.setItem('studyMateVersion', CURRENT_VERSION);
-        }
-
-        function forceUpdate() {
-            // Clear cache and reload
-            localStorage.removeItem('studyMateVersion');
-            location.reload(true);
-        }
-
+        
         // ==================== SOUND SYSTEM ====================
         function initAudioContext() {
             try {
@@ -2275,9 +2181,6 @@
         
         // ==================== CORE INITIALIZATION ====================
         function init() {
-                        // Check for updates
-            checkForUpdates();
-            console.log('Initializing Study Mate Pro v3.0.0...');
             
             // Initialize audio context
             initAudioContext();
@@ -2309,6 +2212,10 @@
             
             // Update activity log
             updateActivityLog('Application initialized');
+
+            // Set version display
+            document.getElementById('appVersion').textContent = `v${CURRENT_VERSION}`;
+            document.getElementById('backupVersion').textContent = `v${CURRENT_VERSION}`;
         }
 
         function initBackgroundTasks() {
@@ -5860,7 +5767,6 @@
         window.toggleCustomSoundInput = toggleCustomSoundInput;
         window.uploadCustomSound = uploadCustomSound;
         window.testCustomSound = testCustomSound;
-        window.forceUpdate = forceUpdate;
         window.switchTestType = switchTestType;
         window.startSubjectiveTest = startSubjectiveTest;
         window.endSubjectiveTest = endSubjectiveTest;
@@ -5870,3 +5776,4 @@
 </body>
 
 </html>
+
